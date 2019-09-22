@@ -7,26 +7,26 @@ https://www.kaggle.com/spscientist/students-performance-in-exams
 
 About this file : Marks secured by the students in high school Students from the United States.
 
-Columns
+Columns :
 
-gender
-race/ethnicity
-parental level of education
-lunch
-test preparation course
-math score
-reading score
+gender,
+race/ethnicity,
+parental level of education,
+lunch,
+test preparation course,
+math score,
+reading score,
 writing score
 
 
 
-Context
+Context :
 Marks secured by the students
 
-Content
+Content :
 This data set consists of the marks secured by the students in various subjects.
 
-Acknowledgements
+Acknowledgements :
 http://roycekimmons.com/tools/generated_data/exams
 
 Inspiration
