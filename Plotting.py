@@ -91,17 +91,16 @@ ax5.legend()
 ax5.set_xlabel(attributeNames_c[i])
 ax5.set_ylabel(attributeNames_c[j])
 
-#COLOUMN = np.where(attributeNames_c == 'reading score')
-COLOUMN = getIndex(attributeNames_c,"reading score")
+COLUMN = getIndex(attributeNames_c,"reading score")
 # Regression of the gender classification
 
 # concatenate the gender vector to the matrix in order to do a one-out-of-K encoding 
 data = np.concatenate((X_c, np.expand_dims(gv_c,axis=1)), axis=1)
 
 # Save the reading score in to a new vector and remove it from the global data
-y_r = data[:, COLOUMN]
+y_r = data[:, COLUMN]
 new_attr_vec = list(range(len(X_c[0]) + 1))
-new_attr_vec.remove(COLOUMN)
+new_attr_vec.remove(COLUMN)
 
 X_r = data[:, new_attr_vec]
 
@@ -111,15 +110,15 @@ gender_encoding = np.zeros((gender.size, K))
 gender_encoding[np.arange(gender.size), gender] = 1
 
 X_r = np.concatenate( (X_r[:, :-1], gender_encoding), axis=1)
-targetName_r = attributeNames_c[COLOUMN]
+targetName_r = attributeNames_c[COLUMN]
 
 new_attr_vec = list(range(len(X_c[0])))
-new_attr_vec.remove(COLOUMN)
+new_attr_vec.remove(COLUMN)
 attributeNames_r = np.concatenate((attributeNames_c[new_attr_vec], list(genderDict.keys())), axis=0)
 N,M = X_r.shape
 fig2, ax3 = plt.subplots()
 
-i = COLOUMN
+i = COLUMN
 ax3.set_title('Gender regression problem')
 ax3.plot(X_r[:, i], y_r, 'o', c=color_hex[0], alpha=0.5)
 ax3.set_xlabel(attributeNames_r[i]);
