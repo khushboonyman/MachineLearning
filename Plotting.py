@@ -129,8 +129,9 @@ plt.show()
 
 Mt = X.copy()
 Mt = np.asanyarray(Mt[:, 5:])
+Mt = Mt.astype(None)
 
-Y = 1 - np.ones((N,1))*Mt.mean(axis=0)
-print(Y)
+Y = Mt - np.ones((N,1))*Mt.mean(axis=0)
+
 U,S,V = svd(Y,full_matrices=False)
 
