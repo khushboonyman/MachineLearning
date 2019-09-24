@@ -27,7 +27,7 @@ attributeNames_c = attributeNames.copy()
 i = getIndex(attributeNames_c, 'math score')
 j = getIndex(attributeNames_c, 'reading score')
 
-color = ['r','b', 'g', 'c', 'm', 'y', (211, 94, 96), (218, 124, 48)]
+color = ['r','b', 'g', 'c', 'm', 'y']
 
 color_hex = ['#6b4c9a', '#cc5e60', '#da7c30', '#958b3d']
 
