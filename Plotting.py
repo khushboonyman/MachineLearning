@@ -10,7 +10,7 @@ from DataPreparation import *
 
 import numpy as np
 import matplotlib.pyplot as plt
-
+from scipy.linalg import svd
 
 def getIndex(a, value):
     x = np.where(a == value)
@@ -31,6 +31,7 @@ color = ['r','b', 'g', 'c', 'm', 'y']
 
 color_hex = ['#6b4c9a', '#cc5e60', '#da7c30', '#958b3d']
 
+marker = ['.', 'x', 'd', 'h']
 fig0, ax1 = plt.subplots()
 ax1.set_title('Education calssification based on parent education')
 for c in range(len(educationNames)):
@@ -68,6 +69,7 @@ for c in range(len(lunchNames)):
     idx = lunv_c == c
     ax4.scatter(x=X_c[idx, i],
                 y=X_c[idx, j],
+                marker = marker[c],
                 c=color[c+3],
                 s=50, alpha=0.5,
                 label=list(lunchDict.keys())[list(lunchDict.values()).index(c)])
@@ -124,3 +126,11 @@ ax3.plot(X_r[:, i], y_r, 'o', c=color_hex[0], alpha=0.5)
 ax3.set_xlabel(attributeNames_r[i]);
 ax3.set_ylabel(targetName_r);
 plt.show()
+
+Mt = X.copy()
+Mt = np.asanyarray(Mt[:, 5:])
+
+Y = 1 - np.ones((N,1))*Mt.mean(axis=0)
+print(Y)
+U,S,V = svd(Y,full_matrices=False)
+
