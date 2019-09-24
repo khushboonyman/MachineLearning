@@ -27,16 +27,17 @@ attributeNames_c = attributeNames.copy()
 i = getIndex(attributeNames_c, 'math score')
 j = getIndex(attributeNames_c, 'reading score')
 
-color = ['r','b', 'g', 'c', 'm', 'y']
+color = ['r','b', 'g', 'c', 'm', 'y', (211, 94, 96), (218, 124, 48)]
 
+color_hex = ['#6b4c9a', '#cc5e60', '#da7c30', '#958b3d']
 
 fig0, ax1 = plt.subplots()
-ax1.set_title('Education calssification')
+ax1.set_title('Education calssification based on parent education')
 for c in range(len(educationNames)):
     idx = edv_c == c
     ax1.scatter(x=X_c[idx, i],
-                y=X_c[idx, j], 
-                c=color[c], 
+                y=X_c[idx, j],
+                c=color[c],
                 s=50, alpha=0.5,
                 label=list(educationDict.keys())[list(educationDict.values()).index(c)])
 ax1.legend()
@@ -47,18 +48,48 @@ ax1.set_ylabel(attributeNames_c[j])
 fig1, ax2 = plt.subplots()
 gv_c = genderVector.copy()
 
-ax2.set_title('Gender calssification')
+ax2.set_title('Education calssification based on gender')
 for c in range(len(genderNames)):
     idx = gv_c == c
     ax2.scatter(x=X_c[idx, i],
-                y=X_c[idx, j], 
-                c=color[c], 
+                y=X_c[idx, j],
+                c=color[c],
                 s=50, alpha=0.5,
                 label=list(genderDict.keys())[list(genderDict.values()).index(c)])
 ax2.legend()
 ax2.set_xlabel(attributeNames_c[i])
 ax2.set_ylabel(attributeNames_c[j])
 
+lunv_c = lunchVector.copy()
+
+fig3, ax4 = plt.subplots()
+ax4.set_title('Education calssification based on social status')
+for c in range(len(lunchNames)):
+    idx = lunv_c == c
+    ax4.scatter(x=X_c[idx, i],
+                y=X_c[idx, j],
+                c=color[c+3],
+                s=50, alpha=0.5,
+                label=list(lunchDict.keys())[list(lunchDict.values()).index(c)])
+ax4.legend()
+ax4.set_xlabel(attributeNames_c[i])
+ax4.set_ylabel(attributeNames_c[j])
+
+
+prepv_c = prepVector.copy()
+
+fig4, ax5 = plt.subplots()
+ax5.set_title('Education calssification based preparation')
+for c in range(len(prepNames)):
+    idx = prepv_c == c
+    ax5.scatter(x=X_c[idx, i],
+                y=X_c[idx, j],
+                c=color_hex[c+2],
+                s=50, alpha=0.5,
+                label=list(prepDict.keys())[list(prepDict.values()).index(c)])
+ax5.legend()
+ax5.set_xlabel(attributeNames_c[i])
+ax5.set_ylabel(attributeNames_c[j])
 
 #COLOUMN = np.where(attributeNames_c == 'reading score')
 COLOUMN = getIndex(attributeNames_c,"reading score")
@@ -79,7 +110,7 @@ K = gender.max()+1
 gender_encoding = np.zeros((gender.size, K))
 gender_encoding[np.arange(gender.size), gender] = 1
 
-X_r = np.concatenate( (X_r[:, :-1], gender_encoding), axis=1) 
+X_r = np.concatenate( (X_r[:, :-1], gender_encoding), axis=1)
 targetName_r = attributeNames_c[COLOUMN]
 
 new_attr_vec = list(range(len(X_c[0])))
@@ -90,7 +121,7 @@ fig2, ax3 = plt.subplots()
 
 i = COLOUMN
 ax3.set_title('Gender regression problem')
-ax3.plot(X_r[:, i], y_r, 'o', c=color[4])
+ax3.plot(X_r[:, i], y_r, 'o', c=color_hex[0], alpha=0.5)
 ax3.set_xlabel(attributeNames_r[i]);
 ax3.set_ylabel(targetName_r);
 plt.show()
