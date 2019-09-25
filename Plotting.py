@@ -12,6 +12,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.linalg import svd
 
+from scipy.stats import linregress
+
 def getIndex(a, value):
     x = np.where(a == value)
     return x[0][0]
@@ -125,13 +127,34 @@ ax3.set_title('Gender regression problem')
 ax3.plot(X_r[:, i], y_r, 'o', c=color_hex[0], alpha=0.5)
 ax3.set_xlabel(attributeNames_r[i]);
 ax3.set_ylabel(targetName_r);
-plt.show()
+#plt.show()
 
 Mt = X.copy()
 Mt = np.asanyarray(Mt[:, 5:])
 Mt = Mt.astype(None)
 
-Y = Mt - np.ones((N,1))*Mt.mean(axis=0)
+Y = Mt - np.ones((N,1))* Mt.mean(axis=0)
+mean_x = np.mean(Mt[0,:])
+mean_y = np.mean(Mt[1,:])
+print(mean_x, mean_y)
+U,S,Vt = svd(Y,full_matrices=False)
+V = Vt.T
+slope, intercept, r_value, p_value, std_err = linregress(V[:,0], V[:,1])
+eig_pairs = [(np.abs(S[i]), U[:,i]) for i in range(len(S))]
 
-U,S,V = svd(Y,full_matrices=False)
+eig_pairs.sort()
+eig_pairs.reverse()
 
+for i in eig_pairs:
+    print(i[0])
+matrix_w = np.hstack((eig_pairs[0][1].reshape(1000,1),
+                      eig_pairs[1][1].reshape(1000,1)))
+print(matrix_w)
+fig5, ax6 = plt.subplots()
+ax6.plot(matrix_w[:,0], matrix_w[:,1], 'o', label='original data')
+ax2.plot([mean_x, -200 * Vt[0][0]], [mean_y, -200 * Vt[0][1]], 'y', label='fitted line', alpha=0.5)
+ax2.plot([mean_x, -200 * Vt[1][0]], [mean_y, -200 * Vt[1][1]], 'm', label='fitted line', alpha=0.5)
+#for v in Vt:
+#    ax6.plot([0, v[0]], [0, v[1]], 'r', label='fitted line')
+ax6.legend()
+plt.show()
