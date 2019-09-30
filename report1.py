@@ -32,9 +32,17 @@ print("covariance of math score",np.cov(mathScore))
 print("covariance of reading score",np.cov(readingScore))
 print("covariance of reading score",np.cov(writingScore))
 
+#plt.matshow(doc.corr())
+#plt.show()
 
-plt.matshow(doc.corr())
-plt.show()
+# Correlation Matrix
+print(doc.corr())
+
+# Heatmap of the Correlation Matrix
+f, axes = plt.subplots(1, 1, figsize=(10, 10))
+#plt.figure()
+sb.heatmap(doc.corr(), vmin = -1, vmax = 1, linewidths = 1,
+           annot = True , fmt = ".2f",annot_kws = {"size": 18},cmap = None)
 
 # Extract attribute names 
 attributeNames = list(doc.columns)[1:]
@@ -42,13 +50,6 @@ attributeNames = list(doc.columns)[1:]
 # Extract class names to python list,# then encode with integers (dict)
 classLabel = doc['gender']
 className = sorted(set(classLabel))
-
-"""className2 = sorted(set(doc['race/ethnicity']))
-className3 = sorted(set(doc['parental level of education']))
-className4 = sorted(set(doc['lunch']))
-className5 = sorted(set(doc['test preparation course']))
-doc.describe()"""
-
 classDict = dict(zip(className, range(2)))
 
 # Extract vector y, convert to NumPy array
@@ -66,23 +67,6 @@ C = len(className)
 
 print('End of part 1')
 
-sb.boxplot(mathScore)
-sb.boxplot(readingScore)
-sb.boxplot(writingScore)
-
-# Two constants
-"""a = 1.5
-b = 1.5
-
-# Check the statements in the exercise
-print("Cosine scaling: %.4f " % (similarity(mathScore,writingScore,'cos') - similarity(a*mathScore,writingScore,'cos'))[0,0])
-print("ExtendedJaccard scaling: %.4f " % (similarity(mathScore,y,'ext') - similarity(a*mathScore,writingScore,'ext'))[0,0])
-print("Correlation scaling: %.4f " % (similarity(mathScore,writingScore,'cor') - similarity(a*mathScore,writingScore,'cor'))[0,0])
-print("Cosine translation: %.4f " % (similarity(mathScore,writingScore,'cos') - similarity(b+mathScore,writingScore,'cos'))[0,0])
-print("ExtendedJaccard translation: %.4f " % (similarity(mathScore,writingScore,'ext') - similarity(b+mathScore,writingScore,'ext'))[0,0])
-print("Correlation translation: %.4f " % (similarity(mathScore,writingScore,'cor') - similarity(b+mathScore,writingScore,'cor'))[0,0])
-"""
-
 #math score vs reading score
 i = 0
 j = 1
@@ -90,8 +74,6 @@ j = 1
 plot(X[:, i], X[:, j], 'o')
 
 f = figure()
-title('Student Score')
-
 
 for c in range(C):
     class_mask = y==c
@@ -107,12 +89,9 @@ show()
 #math score vs writing score
 i = 0
 j = 2
-
 plot(X[:, i], X[:, j], 'o')
 
 f = figure()
-title('Student Score')
-
 
 for c in range(C):
     class_mask = y==c
@@ -132,8 +111,6 @@ j = 2
 plot(X[:, i], X[:, j], 'o')
 
 f = figure()
-title('Student Score')
-
 
 for c in range(C):
     class_mask = y==c
@@ -172,7 +149,7 @@ plt.plot([1,len(rho)],[threshold_2, threshold_2],'g-')
 plt.title('Variance explained by principal components');
 plt.xlabel('Principal component');
 plt.ylabel('Variance explained');
-plt.legend(['Individual','Cumulative','Threshold'])
+plt.legend(['Individual','Cumulative','Threshold','Threshold_2'])
 plt.grid()
 plt.show()
 
@@ -283,3 +260,63 @@ print(all_female_data[0,:])
 print('...and its projection onto PC2')
 print(all_female_data[0,:]@V[:,1])
 # Try to explain why?
+
+
+print('last part')
+
+## exercise 2.1.6
+# Subtract the mean from the data
+Y1 = X - np.ones((N, 1))*X.mean(0)
+
+# Subtract the mean from the data and divide by the attribute standard
+# deviation to obtain a standardized dataset:
+Y2 = X - np.ones((N, 1))*X.mean(0)
+Y2 = Y2*(1/np.std(Y2,0))
+# Here were utilizing the broadcasting of a row vector to fit the dimensions 
+# of Y2
+
+# Store the two in a cell, so we can just loop over them:
+Ys = [Y1, Y2]
+titles = ['Zero-mean', 'Zero-mean and unit variance']
+threshold = 0.9
+# Choose two PCs to plot (the projection)
+i = 0
+j = 1
+
+# Make the plot
+plt.figure(figsize=(10,15))
+plt.subplots_adjust(hspace=.4)
+plt.title('Scores: Effect of standardization')
+nrows=3
+ncols=2
+k=1
+    # Obtain the PCA solution by calculate the SVD of either Y1 or Y2
+U,S,Vh = svd(Ys[k],full_matrices=False)
+V=Vh.T # For the direction of V to fit the convention in the course we transpose
+    # For visualization purposes, we flip the directionality of the
+    # principal directions such that the directions match for Y1 and Y2.
+if k==1: V = -V; U = -U; 
+    
+    # Compute variance explained
+rho = (S*S) / (S*S).sum() 
+    
+    # Compute the projection onto the principal components
+Z = U*S;
+    
+    # Plot attribute coefficients in principal component space
+plt.subplot(nrows, ncols,  3+k)
+for att in range(V.shape[1]):
+    plt.arrow(0,0, V[att,i], V[att,j])
+    plt.text(V[att,i], V[att,j], attributeNames[att])
+plt.xlim([-1,1])
+plt.ylim([-1,1])
+plt.xlabel('PC'+str(i+1))
+plt.ylabel('PC'+str(j+1))
+plt.grid()
+    # Add a unit circle
+plt.plot(np.cos(np.arange(0, 2*np.pi, 0.01)), 
+    np.sin(np.arange(0, 2*np.pi, 0.01)));
+plt.title(titles[k] +'\n'+'Attribute coefficients')
+plt.axis('equal')
+plt.show()            
+
