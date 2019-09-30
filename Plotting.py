@@ -187,34 +187,31 @@ reading_score = np.asarray(df['reading score'])
 writing_score = np.asarray(df['writing score'])
 
 mu = np.mean(reading_score)
-fig6, ax7 = plt.subplots()
-ax7.set_title('Histogram reading score')
-#ax7.hist(reading_score, 10, normed=1, facecolor='#2f7ed8', alpha=0.3)
-#y = mlab.normpdf(10, np.mean(reading_score), np.std(reading_score))
-#y = ((1 / (np.sqrt(2 * np.pi) * np.std(reading_score))) *
-#     np.exp(-0.5 * (1 / np.std(reading_score) * (10 - np.mean(reading_score)))**2))
-#ax7.plot(10, y, 'r--')
-plt.figure()
+# %%
+plt.subplot(1, 3, 1)
 sns.distplot(reading_score, hist=True, kde=True, 
              bins=int(100/10), color = 'lightBlue', 
              hist_kws={'edgecolor':'black'},
              kde_kws={'linewidth': 1})
-plt.title("Histogram reading score")
-plt.figure()
+plt.xlabel("Reading score")
+plt.ylabel("Density")
+plt.subplot(1, 3, 2)
 sns.distplot(math_score, hist=True, kde=True, 
              bins=int(100/10), color = 'lightGreen', 
              hist_kws={'edgecolor':'black'},
              kde_kws={'linewidth': 1})
-plt.title("Histogram math score")
-plt.figure()
+plt.xlabel("Math score")
+plt.ylabel("Density")
+plt.subplot(1, 3, 3)
 wsm = np.mean(writing_score)
 ws_m = writing_score - wsm
 sns.distplot(writing_score, hist=True, kde=True, 
              bins=int(100/10), color = 'red', 
              hist_kws={'edgecolor':'black'},
              kde_kws={'linewidth': 1})
-plt.title("Histogram writing score")
-
+plt.xlabel("Writing score")
+plt.ylabel("Density")
+# %%
 
 
 sim = similarity(writing_score, reading_score, 'cor')
@@ -254,10 +251,19 @@ plt.ylabel('Variance explained');
 plt.legend(['Individual','Cumulative','Threshold'])
 plt.grid()
 plt.show()
-
+# %%
+def countOutliers(score):
+    score = df[score]
+    score_p25 = np.percentile(score, 25)
+    score_p75 = np.percentile(score, 75)
+    l_whisker = max(score_p25 - 3/2 * (score_p75 - score_p25), score.min())
+    return np.count_nonzero(score < l_whisker)
 # %%
 score_frame = df[['math score', 'reading score', 'writing score']]
 plt.figure()
+plt.ylabel("Score")
 sns.boxplot(data=score_frame, palette="Set3")
-
+outliers_reading = countOutliers('reading score')
+outliers_writing = countOutliers('writing score')
+outliers_math = countOutliers('math score')
 # %% 
