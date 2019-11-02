@@ -128,9 +128,9 @@ for train_index, test_index in CV.split(X,y):
     print('\nCrossvalidation fold: {0}/{1}'.format(k+1,K)) 
     # extract training and test set for current CV fold
     X_train = X[train_index]
-    y_train = y[train_index]
+    y_train = y[train_index].squeeze()
     X_test = X[test_index]
-    y_test = y[test_index]
+    y_test = y[test_index].squeeze()
     
     # Extract training and test set for current CV fold, convert to tensors
     X_train_torch = torch.tensor(X[train_index,:], dtype=torch.float)
@@ -240,15 +240,15 @@ biases = [net[i].bias.data.numpy() for i in [0,2]]
 tf =  [str(net[i]) for i in [1,2]]
 draw_neural_net(weights, biases, tf, attribute_names=attributeNames)
 
-print('\nEstimated generalization error, RMSE: {0}'.format(round(np.sqrt(np.mean(Error_test_ann(0))), 4)))
+print('\nEstimated generalization error, RMSE: {0}'.format(round(np.sqrt(np.mean(Error_test_ann)), 4)))
 
 plt.figure(figsize=(10,10));
-y_est = y_test_est.data.numpy(); y_true = y_test.data.numpy();
+y_est = y_test_est.data.numpy(); y_true = y_test_torch.data.numpy();
 axis_range = [np.min([y_est, y_true])-1,np.max([y_est, y_true])+1]
 plt.plot(axis_range,axis_range,'k--')
 plt.plot(y_true, y_est,'ob',alpha=.25)
 plt.legend(['Perfect estimation','Model estimations'])
-plt.title('Alcohol content: estimated versus true value (for last CV-fold)')
+plt.title('Math score: estimated versus true value (for last CV-fold)')
 plt.ylim(axis_range); plt.xlim(axis_range)
 plt.xlabel('True value')
 plt.ylabel('Estimated value')
