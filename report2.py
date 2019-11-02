@@ -12,6 +12,10 @@ from scipy.io import loadmat
 import sklearn.linear_model as lm
 from sklearn import model_selection
 from toolbox_02450 import rlr_validate
+import matplotlib.pyplot as plt
+import torch
+from toolbox_02450 import train_neural_net, draw_neural_net
+from scipy import stats
 
 # Load csv file with data
 doc = pd.read_csv('C:\\Users\\Bruger\\Desktop\\books\\02450_introduction_to_machine_learning_and_data_mining\\02450Toolbox_Python\\Data\\StudentsPerformance.csv')
@@ -57,6 +61,7 @@ listOfAttribute = list(i for i in range(13) if i != 3)
 
 X = np.asarray(doc.iloc[:,listOfAttribute])
 y = np.asarray(doc.iloc[:,3])
+y.shape = (len(y),1)
 
 attributeNames = list(doc.columns)
 attributeNames.remove('math score')
@@ -81,9 +86,10 @@ M = M+1
 
 ## Crossvalidation
 # Create crossvalidation partition for evaluation
-K = 10
+K = 2
 CV = model_selection.KFold(K, shuffle=True)
 
+#SETUP FOR REGULARIZATION
 # Values of lambda
 lambdas = np.power(10.,range(-5,9))
 
@@ -97,15 +103,42 @@ w_rlr = np.empty((M,K))
 mu = np.empty((K, M-1))
 sigma = np.empty((K, M-1))
 
+#SETUP FOR ANN
+Error_test_ann = np.empty((K,1))
+n_hidden_units = 1      # number of hidden units
+n_replicates = 2        # number of networks trained in each k-fold
+max_iter = 10000        # 
+# Setup figure for display of learning curves and error rates in fold
+summaries, summaries_axes = plt.subplots(1,2, figsize=(10,5))
+# Make a list for storing assigned color of learning curve for up to K=10
+color_list = ['tab:orange', 'tab:green', 'tab:purple', 'tab:brown', 'tab:pink',
+              'tab:gray', 'tab:olive', 'tab:cyan', 'tab:red', 'tab:blue']
+# Define the model
+model = lambda: torch.nn.Sequential(
+                    torch.nn.Linear(M, n_hidden_units), #M features to n_hidden_units
+                    torch.nn.Tanh(),   # 1st transfer function,
+                    torch.nn.Linear(n_hidden_units, 1), # n_hidden_units to 1 output neuron
+                    # no final tranfer function, i.e. "linear output"
+                    )
+loss_fn = torch.nn.MSELoss() # notice how this is now a mean-squared-error loss
+print('Training ANN model of type:\n\n{}\n'.format(str(model())))
+
 k=0
 for train_index, test_index in CV.split(X,y):
-    
+    print('\nCrossvalidation fold: {0}/{1}'.format(k+1,K)) 
     # extract training and test set for current CV fold
     X_train = X[train_index]
     y_train = y[train_index]
     X_test = X[test_index]
     y_test = y[test_index]
-    internal_cross_validation = 10    
+    
+    # Extract training and test set for current CV fold, convert to tensors
+    X_train_torch = torch.tensor(X[train_index,:], dtype=torch.float)
+    y_train_torch = torch.tensor(y[train_index], dtype=torch.float)
+    X_test_torch = torch.tensor(X[test_index,:], dtype=torch.float)
+    y_test_torch = torch.tensor(y[test_index], dtype=torch.uint8)
+    
+    internal_cross_validation = 2    
     
     opt_val_err, opt_lambda, mean_w_vs_lambda, train_err_vs_lambda, test_err_vs_lambda = rlr_validate(X_train, y_train, lambdas, internal_cross_validation)
 
@@ -147,7 +180,36 @@ for train_index, test_index in CV.split(X,y):
         xlabel('Regularization factor')
         ylabel('Squared error (crossvalidation)')
         legend(['Train error','Validation error'])
-        grid()   
+        grid()  
+    
+    
+    # Train the net on training data
+    net, final_loss, learning_curve = train_neural_net(model,
+                                                       loss_fn,
+                                                       X=X_train_torch,
+                                                       y=y_train_torch,
+                                                       n_replicates=n_replicates,
+                                                       max_iter=max_iter)
+    
+    print('\n\tBest loss: {}\n'.format(final_loss))
+    
+    # Determine estimated class labels for test set
+    y_test_est = net(X_test_torch)
+    
+    # Determine errors and errors
+    se = (y_test_est.float()-y_test_torch.float())**2 # squared error
+    mse = (sum(se).type(torch.float)/len(y_test_torch)).data.numpy() #mean
+    print(mse)
+    Error_test_ann[k] = mse # store error rate for current CV fold 
+    
+    # Display the learning curve for the best net in the current fold
+    h, = summaries_axes[0].plot(learning_curve, color=color_list[k])
+    h.set_label('CV fold {0}'.format(k+1))
+    summaries_axes[0].set_xlabel('Iterations')
+    summaries_axes[0].set_xlim((0, max_iter))
+    summaries_axes[0].set_ylabel('Loss')
+    summaries_axes[0].set_title('Learning curves')
+
 
     k+=1
 
@@ -165,3 +227,33 @@ for m in range(M):
 
 print('REGULARIZATION WITH 10, 10 FOLDS!!!!')
 
+# Display the MSE across folds
+summaries_axes[1].bar(np.arange(1, K+1), np.squeeze(Error_test_ann), color=color_list)
+summaries_axes[1].set_xlabel('Fold');
+summaries_axes[1].set_xticks(np.arange(1, K+1))
+summaries_axes[1].set_ylabel('MSE');
+summaries_axes[1].set_title('Test mean-squared-error')
+    
+print('Diagram of best neural net in last fold:')
+weights = [net[i].weight.data.numpy().T for i in [0,2]]
+biases = [net[i].bias.data.numpy() for i in [0,2]]
+tf =  [str(net[i]) for i in [1,2]]
+draw_neural_net(weights, biases, tf, attribute_names=attributeNames)
+
+print('\nEstimated generalization error, RMSE: {0}'.format(round(np.sqrt(np.mean(Error_test_ann(0))), 4)))
+
+plt.figure(figsize=(10,10));
+y_est = y_test_est.data.numpy(); y_true = y_test.data.numpy();
+axis_range = [np.min([y_est, y_true])-1,np.max([y_est, y_true])+1]
+plt.plot(axis_range,axis_range,'k--')
+plt.plot(y_true, y_est,'ob',alpha=.25)
+plt.legend(['Perfect estimation','Model estimations'])
+plt.title('Alcohol content: estimated versus true value (for last CV-fold)')
+plt.ylim(axis_range); plt.xlim(axis_range)
+plt.xlabel('True value')
+plt.ylabel('Estimated value')
+plt.grid()
+
+plt.show()
+
+print('ANN WITH 10 FOLDS!!!!')
