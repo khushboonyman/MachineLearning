@@ -47,15 +47,26 @@ doc = pd.get_dummies(doc,prefix=['gender_','race_'],columns=['gender','race/ethn
 # Extract attribute names 
 attributeNames = list(doc.columns)[1:]
 
+print('Data preparation done!!')
+#we decided to predict math score based on all other attributes
+listOfAttribute = list(i for i in range(13) if i != 3)
+
+X = np.asarray(doc.iloc[:,listOfAttribute])
+y = np.asarray(doc.iloc[:,3])
+
+attributeNames = list(doc.columns)
+attributeNames.remove('math score')
 # Compute values of N, M and C.
-#N = len(y)
-#M = len(attributeNames)
+N = len(y)
+M = len(attributeNames)
 #C = len(className)
 
-print('Data preparation done!!')
+print('Data preparation for regression problem!!')
+#REGRESSION
+#standardization
 
-# Subtract the mean from the data and divide by the attribute standard
-# deviation to obtain a standardized dataset:
-#Y2 = X - np.ones((N, 1))*X.mean(0)
-#Y2 = Y2*(1/np.std(Y2,0))
+X = X - np.ones((N, 1))*X.mean(0)
+X = X*(1/np.std(X,0))
+
+print('Standardization done!!')
 
