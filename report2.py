@@ -18,7 +18,7 @@ from toolbox_02450 import train_neural_net, draw_neural_net
 from scipy import stats
 
 # Load csv file with data
-doc = pd.read_csv('C:\\Users\\Bruger\\Desktop\\books\\02450_introduction_to_machine_learning_and_data_mining\\02450Toolbox_Python\\Data\\StudentsPerformance.csv')
+doc = pd.read_csv('./StudentsPerformance.csv')
 
 #encoding columns : parental level of education, lunch, test preparation course 
 #parental level of education is ordinal, so we assign rankings to them
