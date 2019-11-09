@@ -7,9 +7,8 @@ from scipy.io import loadmat
 import sklearn.linear_model as lm
 from sklearn import model_selection
 from toolbox_02450 import rlr_validate
+from dataprepregression import *
 
-K = 2
-internal_cross_validation = 2
 # Add offset attribute
 X = np.concatenate((np.ones((X.shape[0],1)),X),1)
 attributeNames = [u'Offset']+attributeNames
@@ -89,3 +88,4 @@ for m in range(M):
     print('{:>15} {:>15}'.format(attributeNames[m], np.round(w_rlr[m,-1],2)))
 
 print('Ran regularization linear regression ')
+

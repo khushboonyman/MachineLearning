@@ -66,5 +66,8 @@ attributeNames.remove('math score')
 N = len(y)
 M = len(attributeNames)
 #C = len(className)
+#SETTING UP CROSS VALIDATION
+K = 2
+internal_cross_validation = 2
 
 print('Data preparation for regression problem!!')
