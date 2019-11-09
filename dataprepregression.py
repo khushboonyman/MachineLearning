@@ -58,7 +58,7 @@ listOfAttribute = list(i for i in range(13) if i != 3)
 
 X = np.asarray(doc.iloc[:,listOfAttribute])
 y = np.asarray(doc.iloc[:,3])
-y.shape = (len(y),1)
+#y.shape = (len(y),1)
 
 attributeNames = list(doc.columns)
 attributeNames.remove('math score')

@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Nov 2 2019
+Created on Sat Nov  9 14:41:32 2019
 
-@author: Enrico, Khushboo, Alex
+@author: Bruger
 """
+
+#REGRESSION
+#standardization
+X = X - np.ones((N, 1))*X.mean(0)
+X = X*(1/np.std(X,0))
+
+print('Standardization done!!')
+
 # Add offset attribute
 X = np.concatenate((np.ones((X.shape[0],1)),X),1)
 attributeNames = [u'Offset']+attributeNames
@@ -18,7 +26,6 @@ CV = model_selection.KFold(K, shuffle=True)
 #SETUP FOR REGULARIZATION
 # Values of lambda
 lambdas = np.power(10.,range(-5,9))
-#lambdas = list(i for i in range(-5,5))
 
 # Initialize variables
 Error_train_rlr = np.empty((K,1))
@@ -31,21 +38,33 @@ mu = np.empty((K, M-1))
 sigma = np.empty((K, M-1))
 
 #SETUP FOR ANN
-Error_train_ann = np.empty((K,1))
 Error_test_ann = np.empty((K,1))
-#n_hidden_units = 15   # number of hidden units
+n_hidden_units = 15   # number of hidden units
 n_replicates = 2        # number of networks trained in each k-fold
 max_iter = 10000        # 
-hidden_star = [14,15,16,17]
 # Setup figure for display of learning curves and error rates in fold
+summaries, summaries_axes = plt.subplots(1,2, figsize=(10,5))
+# Make a list for storing assigned color of learning curve for up to K=10
+color_list = ['tab:orange', 'tab:green', 'tab:purple', 'tab:brown', 'tab:pink',
+              'tab:gray', 'tab:olive', 'tab:cyan', 'tab:red', 'tab:blue']
+# Define the model
+model = lambda: torch.nn.Sequential(
+                    torch.nn.Linear(M, n_hidden_units), #M features to n_hidden_units
+                    torch.nn.Tanh(),   # 1st transfer function,
+                    torch.nn.Linear(n_hidden_units, 1), # n_hidden_units to 1 output neuron
+                    # no final tranfer function, i.e. "linear output"
+                    )
+
+loss_fn = torch.nn.MSELoss() # notice how this is now a mean-squared-error loss
+print('Training ANN model of type:\n\n{}\n'.format(str(model())))
 
 k=0
 
-def regular(X,y,train_index,test_index):
+def regular():
     X_train = X[train_index]
-    y_train = y[train_index]
+    y_train = y[train_index].squeeze()
     X_test = X[test_index]
-    y_test = y[test_index]
+    y_test = y[test_index].squeeze()
     opt_val_err, opt_lambda, mean_w_vs_lambda, train_err_vs_lambda, test_err_vs_lambda = rlr_validate(X_train, y_train, lambdas, internal_cross_validation)
 
     # Standardize outer fold based on training set, and save the mean and standard
@@ -87,21 +106,7 @@ def regular(X,y,train_index,test_index):
         
     return y_train,y_test
     
-def ANN(n_hidden_units):
-    summaries, summaries_axes = plt.subplots(1,2, figsize=(10,5))
-# Make a list for storing assigned color of learning curve for up to K=10
-    color_list = ['tab:orange', 'tab:green', 'tab:purple', 'tab:brown', 'tab:pink',
-                  'tab:gray', 'tab:olive', 'tab:cyan', 'tab:red', 'tab:blue']
-# Define the model
-    model = lambda: torch.nn.Sequential(
-                    torch.nn.Linear(M, n_hidden_units), #M features to n_hidden_units
-                    torch.nn.Tanh(),   # 1st transfer function,
-                    torch.nn.Linear(n_hidden_units, 1), # n_hidden_units to 1 output neuron
-                    # no final tranfer function, i.e. "linear output"
-                    )
-
-    loss_fn = torch.nn.MSELoss() # notice how this is now a mean-squared-error loss
-    print('Training ANN model of type:\n\n{}\n'.format(str(model())))   
+def ANN():
     # Extract training and test set for current CV fold, convert to tensors
     X_train_torch = torch.tensor(X[train_index,:], dtype=torch.float)
     y_train_torch = torch.tensor(y[train_index], dtype=torch.float)
@@ -186,8 +191,9 @@ def displayANN():
 for train_index, test_index in CV.split(X,y):
     print('\nCrossvalidation fold: {0}/{1}'.format(k+1,K)) 
     
-    y_train, y_test = regular(X,y,train_index,test_index)    
-    #y_test_est,y_test_torch,net = ANN()        
+    y_train, y_test = regular()    
+    y_test_est,y_test_torch,net = ANN()
+        
     # Compute mean squared error without using the input data at all
     Error_train_nofeatures[k] = np.square(y_train-y_train.mean()).sum(axis=0)/y_train.shape[0]
     Error_test_nofeatures[k] = np.square(y_test-y_test.mean()).sum(axis=0)/y_test.shape[0]
@@ -198,4 +204,4 @@ show()
 
 displayReg()
 
-#displayANN()
+displayANN()

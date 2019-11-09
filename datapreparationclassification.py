@@ -52,6 +52,7 @@ doc['test preparation course'].replace(testPrepCourseDict, inplace=True)
 #encoding the categorical variable gender 
 genderDict = {'male':0,
               'female':1}
+classNames =  ['male','female']
 doc['gender'].replace(genderDict, inplace=True)
 
 #one in K encoding of columns : gender, race/ethinicity 
@@ -60,10 +61,9 @@ doc = pd.get_dummies(doc,prefix=['race_'],columns=['race/ethnicity'])
 
 # Extract attribute names 
 attributeNames = list(doc.columns)[1:]
-
 X = np.asarray(doc.loc[:,attributeNames])
 y = np.asarray(doc.iloc[:,0])
-y.shape = (len(y),1)
+#y.shape = (len(y),1)
 # Compute values of N, M and C.
 N = len(y)
 M = len(attributeNames)
