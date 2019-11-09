@@ -18,6 +18,7 @@ lambdas = np.power(10.,range(-5,9))
 # Initialize variables    
 Error_train_rlr = np.empty((K,1))
 Error_test_rlr = np.empty((K,1))
+optimal_lambdas = np.empty((K,1))
 Error_train_nofeatures = np.empty((K,1))
 Error_test_nofeatures = np.empty((K,1))
 w_rlr = np.empty((M,K))
@@ -48,7 +49,7 @@ for train_index, test_index in CV.split(X,y):
     # Compute mean squared error without using the input data at all
     Error_train_nofeatures[k] = np.square(y_train-y_train.mean()).sum(axis=0)/y_train.shape[0]
     Error_test_nofeatures[k] = np.square(y_test-y_test.mean()).sum(axis=0)/y_test.shape[0]
-
+    optimal_lambdas[k] = opt_lambda
     # Estimate weights for the optimal value of lambda, on entire training set
     lambdaI = opt_lambda * np.eye(M)
     lambdaI[0,0] = 0 # Do no regularize the bias term

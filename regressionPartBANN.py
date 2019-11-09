@@ -17,11 +17,9 @@ from regressionPartBLambda import *
 def ann_validate(X,y,hidden_units,cvf,n_replicates,max_iter):
     CV = model_selection.KFold(cvf, shuffle=True)
     M = X.shape[1]
-    train_error = np.empty((cvf,len(lambdas)))
-    test_error = np.empty((cvf,len(lambdas)))
+    test_error = np.empty((cvf,len(hidden_units)))
     f = 0
     for train_index, test_index in CV.split(X,y):
-        print('f is',f)
         X_train = X[train_index]
         y_train = y[train_index]
         X_test = X[test_index]
@@ -47,14 +45,11 @@ def ann_validate(X,y,hidden_units,cvf,n_replicates,max_iter):
             #print("y test",y_test)
             # Evaluate test performance
             se = (y_test_est.float()-y_test.float())**2 # squared error
-            print('se ',se)
-            test_error[f,l] = (sum(se).type(torch.float)/len(y_test)).data.numpy() #mean
-            print(test_error)
+            err = (sum(se).type(torch.float)/len(y_test)).data.numpy()
+            test_error[f,l] = err
+            optimal_hidden = hidden_units[np.argmin(np.mean(test_error,axis=0))]
         f=f+1
-    #optimal_hidden = hidden_units[np.argmin(np.mean(test_error,axis=0))]
-    optimal_hidden = 15
     return optimal_hidden,test_error
-
 
 X = np.asarray(doc.iloc[:,listOfAttribute])
 y = np.asarray(doc.iloc[:,3])
@@ -76,7 +71,8 @@ summaries, summaries_axes = plt.subplots(1,2, figsize=(10,5))
 color_list = ['tab:orange', 'tab:green', 'tab:purple', 'tab:brown', 'tab:pink',
               'tab:gray', 'tab:olive', 'tab:cyan', 'tab:red', 'tab:blue']
 
-Error_test_ann = [] # make a list for storing generalizaition error in each loop
+Error_test_ann = [] # make a list for storing test ANN error in each loop
+optimal_hid_list = [] # make a list of storing optimal hidden units in each loop
 for k, interval in enumerate(train_test_index): 
     print('\nCrossvalidation fold: {0}/{1}'.format(k+1,K))    
     train_index = interval[0]
@@ -117,6 +113,7 @@ for k, interval in enumerate(train_test_index):
     se = (y_test_est.float()-y_test.float())**2 # squared error
     mse = (sum(se).type(torch.float)/len(y_test)).data.numpy() #mean
     Error_test_ann.append(mse) # store error rate for current CV fold 
+    optimal_hid_list.append(optimal_hidden)
     
     # Display the learning curve for the best net in the current fold
     h, = summaries_axes[0].plot(learning_curve, color=color_list[k])
@@ -127,7 +124,7 @@ for k, interval in enumerate(train_test_index):
     summaries_axes[0].set_title('Learning curves')
 
 # Display the MSE across folds
-summaries_axes[1].bar(np.arange(1, K+1), np.squeeze(np.asarray(errors)), color=color_list)
+summaries_axes[1].bar(np.arange(1, K+1), np.squeeze(np.asarray(Error_test_ann)), color=color_list)
 summaries_axes[1].set_xlabel('Fold');
 summaries_axes[1].set_xticks(np.arange(1, K+1))
 summaries_axes[1].set_ylabel('MSE');
@@ -140,7 +137,7 @@ tf =  [str(net[i]) for i in [1,2]]
 draw_neural_net(weights, biases, tf, attribute_names=attributeNames)
 
 # Print the average classification error rate
-print('\nEstimated generalization error, RMSE: {0}'.format(round(np.sqrt(np.mean(errors)), 4)))
+print('\nEstimated generalization error, RMSE: {0}'.format(round(np.sqrt(np.mean(Error_test_ann)), 4)))
 
 plt.figure(figsize=(10,10));
 y_est = y_test_est.data.numpy(); y_true = y_test.data.numpy();
@@ -148,7 +145,7 @@ axis_range = [np.min([y_est, y_true])-1,np.max([y_est, y_true])+1]
 plt.plot(axis_range,axis_range,'k--')
 plt.plot(y_true, y_est,'ob',alpha=.25)
 plt.legend(['Perfect estimation','Model estimations'])
-plt.title('Alcohol content: estimated versus true value (for last CV-fold)')
+plt.title('Math score: estimated versus true value (for last CV-fold)')
 plt.ylim(axis_range); plt.xlim(axis_range)
 plt.xlabel('True value')
 plt.ylabel('Estimated value')
