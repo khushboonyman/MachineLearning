@@ -60,8 +60,8 @@ N, M = X.shape
 X = stats.zscore(X);
 
 # Parameters for neural network classifier
-hidden_units = [16,17]
-n_hidden_units = 2      # number of hidden units
+hidden_units = [17,18]
+#n_hidden_units = 2      # number of hidden units
 n_replicates = 1        # number of networks trained in each k-fold
 max_iter = 10000        
 
@@ -73,6 +73,7 @@ color_list = ['tab:orange', 'tab:green', 'tab:purple', 'tab:brown', 'tab:pink',
 
 Error_test_ann = [] # make a list for storing test ANN error in each loop
 optimal_hid_list = [] # make a list of storing optimal hidden units in each loop
+y_test_ann = []
 for k, interval in enumerate(train_test_index): 
     print('\nCrossvalidation fold: {0}/{1}'.format(k+1,K))    
     train_index = interval[0]
@@ -108,9 +109,10 @@ for k, interval in enumerate(train_test_index):
     print('\n\tBest loss: {}\n'.format(final_loss))
     
     y_test_est = net(X_test)
-    
+    y_test_ann += list(y_test_est.float())
     # Determine errors and errors
     se = (y_test_est.float()-y_test.float())**2 # squared error
+    #print(se)
     mse = (sum(se).type(torch.float)/len(y_test)).data.numpy() #mean
     Error_test_ann.append(mse) # store error rate for current CV fold 
     optimal_hid_list.append(optimal_hidden)

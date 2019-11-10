@@ -7,7 +7,7 @@ from scipy.io import loadmat
 import sklearn.linear_model as lm
 from sklearn import model_selection
 from toolbox_02450 import rlr_validate
-from dataprepregression import *
+from dataprepregressionPartB import *
 
 # Add offset attribute
 X = np.concatenate((np.ones((X.shape[0],1)),X),1)
@@ -15,6 +15,7 @@ attributeNames = [u'Offset']+attributeNames
 M = M+1
 #PREPARE REGRESSION
 lambdas = np.power(10.,range(-5,9))
+#lambdas = [.01,.1,.5,1,2,4,5]
 # Initialize variables    
 Error_train_rlr = np.empty((K,1))
 Error_test_rlr = np.empty((K,1))
@@ -31,12 +32,17 @@ CV = model_selection.KFold(K, shuffle=True)
 
 k=0
 train_test_index = []
+y_test_acc = []
+y_test_base = []
+y_test_lin = []
 for train_index, test_index in CV.split(X,y):
     train_test_index.append([train_index,test_index])
     X_train = X[train_index]
     y_train = y[train_index]
     X_test = X[test_index]
     y_test = y[test_index]    
+    #print(list(y_test))
+    y_test_acc += list(y_test)
     
     opt_val_err, opt_lambda, mean_w_vs_lambda, train_err_vs_lambda, test_err_vs_lambda = rlr_validate(X_train, y_train, lambdas, internal_cross_validation)
 
@@ -49,6 +55,9 @@ for train_index, test_index in CV.split(X,y):
     # Compute mean squared error without using the input data at all
     Error_train_nofeatures[k] = np.square(y_train-y_train.mean()).sum(axis=0)/y_train.shape[0]
     Error_test_nofeatures[k] = np.square(y_test-y_test.mean()).sum(axis=0)/y_test.shape[0]
+    listToadd = [y_test.mean()] * len(y_test)
+    y_test_base += listToadd
+    
     optimal_lambdas[k] = opt_lambda
     # Estimate weights for the optimal value of lambda, on entire training set
     lambdaI = opt_lambda * np.eye(M)
@@ -57,7 +66,7 @@ for train_index, test_index in CV.split(X,y):
     # Compute mean squared error with regularization with optimal lambda
     Error_train_rlr[k] = np.square(y_train-X_train @ w_rlr[:,k]).sum(axis=0)/y_train.shape[0]
     Error_test_rlr[k] = np.square(y_test-X_test @ w_rlr[:,k]).sum(axis=0)/y_test.shape[0]
-
+    y_test_lin += list(X_test @ w_rlr[:,k])
     # Display the results for the last cross-validation fold
     if k == K-1:
         figure(k, figsize=(12,8))
