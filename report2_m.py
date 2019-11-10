@@ -85,7 +85,7 @@ kf.get_n_splits(X)
 lambdas = np.power(10.,range(-5,9))
 
 
-CV = model_selection.KFold(cvf, shuffle=True)
+CV = model_selection.KFold(n_splits=cvf, shuffle=False, random_state=0)
 M = X.shape[1]
 w = np.empty((M,cvf,len(lambdas)))
 train_error = np.empty((cvf,len(lambdas)))
