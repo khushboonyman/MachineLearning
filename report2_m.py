@@ -6,18 +6,9 @@ Created on Sat Nov 2 2019
 """
 import pandas as pd
 from matplotlib.pylab import (figure, semilogx, loglog, xlabel, ylabel, legend,
-                           title, subplot, show, grid)
+                           title, subplot, grid)
 import numpy as np
-from scipy.io import loadmat
-import sklearn.linear_model as lm
 from sklearn import model_selection
-from toolbox_02450 import rlr_validate
-import matplotlib.pyplot as plt
-from toolbox_02450 import train_neural_net, draw_neural_net
-from scipy import stats
-from sklearn.model_selection import train_test_split
-from sklearn.model_selection import KFold
-from sklearn import svm
 
 # Load csv file with data
 doc = pd.read_csv('~/Git/MachineLearning/StudentsPerformance.csv')
@@ -78,12 +69,13 @@ print('Data preparation for regression problem!!')
 
 #%%
 K = 12
-k = 5
 cvf = 10
-kf = KFold(n_splits=k)
-kf.get_n_splits(X)
+
 lambdas = np.power(10.,range(-5,9))
 
+# add offset attribute
+X = np.concatenate((np.ones((X.shape[0],1)),X),1)
+attributeNames = [u'Offset']+attributeNames
 
 CV = model_selection.KFold(n_splits=cvf, shuffle=False, random_state=0)
 M = X.shape[1]
@@ -127,7 +119,7 @@ test_err_vs_lambda = np.mean(test_error,axis=0)
 mean_w_vs_lambda = np.squeeze(np.mean(w,axis=1))
 
 
-figure(k, figsize=(12,8))
+figure(0, figsize=(12,8))
 subplot(1,2,1)
 semilogx(lambdas,mean_w_vs_lambda.T[:,1:],'.-') # Don't plot the bias term
 xlabel('Regularization factor')
