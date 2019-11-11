@@ -26,17 +26,17 @@ def find_optimal_lambda(X, y, lambda_interval, cvf):
             mdl = LogisticRegression(penalty='l2', C=1/lambda_interval[l] )
             mdl.fit(X_train, y_train)
         
-            y_train_est = mdl.predict(X_train).T
+            #y_train_est = mdl.predict(X_train).T
             y_test_est = mdl.predict(X_test).T
             
-            train_error_rate[l] = np.sum(y_train_est != y_train) / len(y_train)
+            #train_error_rate[l] = np.sum(y_train_est != y_train) / len(y_train)
             test_error_rate[l] = np.sum(y_test_est != y_test) / len(y_test)
         
             w_est = mdl.coef_[0] 
             coefficient_norm[k] = np.sqrt(np.sum(w_est**2))
         
         min_test_errors[k] = np.min(test_error_rate)
-        min_train_errors[k] = np.min(train_error_rate)
+        #min_train_errors[k] = np.min(train_error_rate)
         
         opt_lambda_idx = np.argmin(test_error_rate)
         opt_lambda = lambda_interval[opt_lambda_idx]
@@ -48,7 +48,7 @@ def find_optimal_lambda(X, y, lambda_interval, cvf):
     opt_lambda_idx_2 = np.argmin(min_test_errors)
     final_opt_lambda = opt_lambdas[opt_lambda_idx_2]
     
-    final_min_train_error = np.min(min_train_errors)
+    #final_min_train_error = np.min(min_train_errors)
     
 # =============================================================================
 #     plt.figure(figsize=(8,8))
@@ -75,17 +75,17 @@ def find_optimal_lambda(X, y, lambda_interval, cvf):
 
     print('Ran Find Optimal Lambda')
 
-    return final_min_test_error, final_min_train_error, final_opt_lambda
+    return final_min_test_error, final_opt_lambda
 
 
 def find_optimal_lambda_for_knn(X, y, L, cvf):
     CV = model_selection.KFold(n_splits=cvf,shuffle=True)    
     opt_lambdas = np.empty((cvf,1))
     min_test_errors = np.empty((cvf,1))
-    min_train_errors = np.empty((cvf,1))
     
 
     errors = np.zeros(len(L))
+    errors[0] = 100000000
     i=0
     for train_index, test_index in CV.split(X, y):
         #print('Crossvalidation fold: {0}/{1}'.format(i+1,cvf))    
@@ -97,13 +97,13 @@ def find_optimal_lambda_for_knn(X, y, L, cvf):
         y_test = y[test_index]
     
         # Fit classifier and classify the test points (consider 1 to 40 neighbors)
-        for l in range(1,len(L)+1):
+        for l in range(1,len(L)):
             knclassifier = KNeighborsClassifier(n_neighbors=l);
             knclassifier.fit(X_train, y_train);
             y_est = knclassifier.predict(X_test);
             cm = confusion_matrix(y_test, y_est);
             accuracy = 100*cm.diagonal().sum()/cm.sum()
-            errors[l-1] = 100-accuracy
+            errors[l] = 100-accuracy
             #errors[l-1] = np.sum(y_est[0]!=y_test[0])
     
         

@@ -6,6 +6,7 @@ from matplotlib.pyplot import figure, plot, xlabel, ylabel, show
 import numpy as np
 from scipy.io import loadmat
 from sklearn import model_selection
+from sklearn.dummy import DummyClassifier
 from data_preparation_n_standarization import *
 
 K = 10
@@ -17,6 +18,8 @@ Error_train_nofeatures = np.empty((K,1))
 Error_test_nofeatures = np.empty((K,1))
 w_noreg = np.empty((M,K))
 i=0
+
+
 for train_index, test_index in CV.split(X, y):
     print('Crossvalidation fold: {0}/{1}'.format(i+1,K))    
     
@@ -25,11 +28,17 @@ for train_index, test_index in CV.split(X, y):
     y_train = y[train_index]
     X_test = X[test_index,:]
     y_test = y[test_index]
-
+    dy = []
+    dy1 = []
     # Compute mean squared error without using the input data at all
     Error_train_nofeatures[i] = np.square(y_train-y_train.mean()).sum(axis=0)/y_train.shape[0]
-    Error_test_nofeatures[i] = np.square(y_test-y_test.mean()).sum(axis=0)/y_test.shape[0]
+    Error_test_nofeatures[i] = np.square(y_test-y_test.mean()).sum(axis=0)/y_test.shape[0]*100
     
+    
+    i+=1
+    
+
+
 # =============================================================================
 #     Xty = X_train.T @ y_train
 #     XtX = X_train.T @ X_train

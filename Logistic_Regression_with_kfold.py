@@ -35,10 +35,9 @@ for train_index, test_index in CV.split(X):
     
     lambda_interval = np.logspace(-8, 2, 50)
     
-    final_min_test_error, final_min_train_error, final_opt_lambda = find_optimal_lambda(X_train, y_train, lambda_interval, cvf=10)
+    final_min_test_error, final_opt_lambda = find_optimal_lambda(X_train, y_train, lambda_interval, cvf=10)
 
     Error_test[k] = final_min_test_error
-    Error_train[k] = final_min_train_error
     opt_lambdas[k] = final_opt_lambda
     
     print('Cross validation fold {0}/{1}'.format(k+1,K))
@@ -48,8 +47,13 @@ for train_index, test_index in CV.split(X):
     k+=1
 
 min_error = np.min(Error_test)
-opt_lambda_idx = np.argmin(opt_lambdas)
+opt_lambda_idx = np.argmin(min_error)
 opt_lambda = opt_lambdas[opt_lambda_idx]
+
+opt_lambdas = np.sort(opt_lambdas, axis=None)
+Error_train = np.sort(Error_train, axis=None)
+Error_test = np.sort(Error_test, axis=None)
+
 
 plt.figure(figsize=(8,8))
 plt.semilogx(opt_lambdas, Error_train*100)
